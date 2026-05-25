@@ -1,0 +1,12 @@
+.footer {
+  background-color: var(--bg-navbar);
+  color: #e2e8f0;
+  text-align: center;
+  padding: 16px;
+  margin-top: auto;
+}
+
+.footer-text {
+  margin: 4px 0;
+  font-size: 13px;
+}
