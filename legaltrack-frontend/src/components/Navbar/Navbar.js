@@ -1,13 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { logout } from '../../services/api';
+import { logout, getMe } from '../../services/api';
 import { useLanguage } from '../../i18n/LanguageContext';
 import './Navbar.css';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
   const { t } = useLanguage();
+  const localUser = JSON.parse(localStorage.getItem('user'));
+  const [userData, setUserData] = useState(localUser);
+
+  // Fetch current user from backend on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getMe();
+        if (res.success) setUserData(res.data);
+      } catch (err) {
+        // Fallback to localStorage if backend call fails
+        setUserData(localUser);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -26,7 +41,7 @@ const Navbar = () => {
       <div className="navbar-right">
         <Link to="/settings" className="navbar-link">⚙️ {t.settings}</Link>
         <span className="navbar-username">
-          {user ? `${user.firstName} ${user.lastName}` : ''}
+          {userData ? `${userData.firstName} ${userData.lastName}` : ''}
         </span>
         <button onClick={handleLogout} className="navbar-logout">
           {t.logout}
