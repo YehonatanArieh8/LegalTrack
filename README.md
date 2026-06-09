@@ -11,7 +11,54 @@ A web application for lawyers and law firms to manage cases, clients, and deadli
 ├── Legaltrack-Frontend/   # React.js frontend application
 
 ```
+## Class Diagram
 
+```mermaid
+classDiagram
+    class User {
+        +int userId
+        +string firstName
+        +string lastName
+        +string userRole
+        +datetime createDate
+        +datetime updateDate
+    }
+
+    class Client {
+        +int clientId
+        +int userId
+        +string name
+        +string phone
+        +string email
+        +string address
+        +datetime joinedDate
+    }
+
+    class Case {
+        +int caseId
+        +int clientId
+        +int userId
+        +string type
+        +string status
+        +string description
+        +datetime openedDate
+        +datetime closedDate
+    }
+
+    class Settings {
+        +int userId
+        +string username
+        +string email
+        +string theme
+        +string language
+        +bool notificationsEnabled
+    }
+
+    User "1" --> "0..*" Client : manages
+    User "1" --> "0..*" Case : handles
+    User "1" --> "1" Settings : has
+    Client "1" --> "0..*" Case : linked to
+```
 ---
 
 ## Quick Start
@@ -92,51 +139,4 @@ For full frontend documentation see `Legaltrack-Frontend/README.md`.
 
 ---
 
-## Class Diagram
 
-```mermaid
-classDiagram
-    class User {
-        +int userId
-        +string firstName
-        +string lastName
-        +string userRole
-        +datetime createDate
-        +datetime updateDate
-    }
-
-    class Client {
-        +int clientId
-        +int userId
-        +string name
-        +string phone
-        +string email
-        +string address
-        +datetime joinedDate
-    }
-
-    class Case {
-        +int caseId
-        +int clientId
-        +int userId
-        +string type
-        +string status
-        +string description
-        +datetime openedDate
-        +datetime closedDate
-    }
-
-    class Settings {
-        +int userId
-        +string username
-        +string email
-        +string theme
-        +string language
-        +bool notificationsEnabled
-    }
-
-    User "1" --> "0..*" Client : manages
-    User "1" --> "0..*" Case : handles
-    User "1" --> "1" Settings : has
-    Client "1" --> "0..*" Case : linked to
-```
