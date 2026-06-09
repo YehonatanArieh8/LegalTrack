@@ -14,21 +14,22 @@ npm install
 npm start
 ```
 
-- Port: `3000`
-- Base URL: `http://localhost:3000`
-- Backend API URL: `http://localhost:5000`
+- Port: `5173`
+- Base URL: `http://localhost:5173`
+- Backend API URL: `http://localhost:3000`
 
-> Make sure the backend server is running on port 5000 before starting the frontend.
+> Make sure the backend server is running on port 3000 before starting the frontend.
 
 ## Configuration
 
 The backend URL is configured in `.env`:
 
 ```
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:3000
+PORT=5173
 ```
 
-Change this value if your backend runs on a different port.
+Change these values if your backend or frontend run on different ports.
 
 ## Project Structure
 
@@ -69,6 +70,126 @@ src/
 │   ├── translations.js
 │   └── LanguageContext.js
 └── App.js
+```
+
+## Class Diagram
+
+```mermaid
+classDiagram
+    class App {
+        +Router routes
+        +render()
+    }
+
+    class LanguageContext {
+        +string language
+        +object t
+        +changeLanguage(lang)
+    }
+
+    class ApiService {
+        +string BASE_URL
+        +login(email, password)
+        +getUsers()
+        +getClients()
+        +createClient(data)
+        +getCases(status)
+        +createCase(data)
+        +getSettings(userId)
+        +updateSettings(userId, data)
+    }
+
+    class LoginPage {
+        +string email
+        +string password
+        +string error
+        +handleSubmit()
+        +render()
+    }
+
+    class Dashboard {
+        +array cases
+        +array clients
+        +bool loading
+        +fetchData()
+        +render()
+    }
+
+    class ClientsPage {
+        +array clients
+        +bool showModal
+        +fetchClients()
+        +handleAddClient()
+        +render()
+    }
+
+    class CasesPage {
+        +array cases
+        +string statusFilter
+        +bool showModal
+        +fetchCases()
+        +handleAddCase()
+        +render()
+    }
+
+    class SettingsPage {
+        +object settings
+        +handleSave()
+        +render()
+    }
+
+    class Navbar {
+        +string activePage
+        +render()
+    }
+
+    class Footer {
+        +render()
+    }
+
+    class Card {
+        +string title
+        +string value
+        +render()
+    }
+
+    class DataTable {
+        +array columns
+        +array data
+        +render()
+    }
+
+    App --> LoginPage : route /
+    App --> Dashboard : route /dashboard
+    App --> ClientsPage : route /clients
+    App --> CasesPage : route /cases
+    App --> SettingsPage : route /settings
+    App --> LanguageContext : provides
+
+    Dashboard --> Navbar : uses
+    Dashboard --> Footer : uses
+    Dashboard --> Card : uses
+    Dashboard --> DataTable : uses
+    Dashboard --> ApiService : calls
+
+    ClientsPage --> Navbar : uses
+    ClientsPage --> Footer : uses
+    ClientsPage --> Card : uses
+    ClientsPage --> DataTable : uses
+    ClientsPage --> ApiService : calls
+
+    CasesPage --> Navbar : uses
+    CasesPage --> Footer : uses
+    CasesPage --> Card : uses
+    CasesPage --> DataTable : uses
+    CasesPage --> ApiService : calls
+
+    SettingsPage --> Navbar : uses
+    SettingsPage --> Footer : uses
+    SettingsPage --> ApiService : calls
+    SettingsPage --> LanguageContext : uses
+
+    LoginPage --> ApiService : calls
 ```
 
 ## Demo Credentials
@@ -112,3 +233,6 @@ Password: 123456
 - **Reusable components** — Card, DataTable used across all pages
 - **Loading and error states** on all data-fetching pages
 - **Formatted dates** — displayed as date - time (no seconds)
+
+---
+

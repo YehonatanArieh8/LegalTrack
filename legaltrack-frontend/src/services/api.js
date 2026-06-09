@@ -1,5 +1,5 @@
 // Base API configuration and helper functions
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 // Helper to get stored user from localStorage
 const getUser = () => JSON.parse(localStorage.getItem('user'));
 
