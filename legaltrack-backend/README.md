@@ -14,9 +14,9 @@ npm install
 node server.js
 ```
 
-- Port: `5000`
-- Base URL: `http://localhost:5000`
-- API Base Path: `/`
+- Port: `3000`
+- Base URL: `http://localhost:3000`
+- API Base Path: `/api`
 
 ## Project Structure
 
@@ -49,15 +49,132 @@ legaltrack-backend/
     └── LegalTrack API.postman_collection.json
 ```
 
+## Class Diagram
+
+```mermaid
+classDiagram
+    class Server {
+        +express app
+        +int PORT
+        +start()
+    }
+
+    class Logger {
+        +log(req, res, next)
+    }
+
+    class Auth {
+        +authorize(...roles)
+        +authorizeOrSelf(...roles)
+    }
+
+    class Identify {
+        +identify(req, res, next)
+    }
+
+    class AuthController {
+        +login(req, res)
+        +logout(req, res)
+        +me(req, res)
+    }
+
+    class UsersController {
+        +getAllUsers(req, res)
+        +getUserById(req, res)
+        +createUser(req, res)
+        +updateUser(req, res)
+        +deleteUser(req, res)
+    }
+
+    class ClientsController {
+        +getAllClients(req, res)
+        +getClientById(req, res)
+        +createClient(req, res)
+        +updateClient(req, res)
+        +deleteClient(req, res)
+    }
+
+    class CasesController {
+        +getAllCases(req, res)
+        +getCaseById(req, res)
+        +createCase(req, res)
+        +updateCase(req, res)
+        +deleteCase(req, res)
+    }
+
+    class SettingsController {
+        +getSettings(req, res)
+        +updateSettings(req, res)
+    }
+
+    class UserModel {
+        +int userId
+        +string firstName
+        +string lastName
+        +string userRole
+        +datetime createDate
+        +datetime updateDate
+    }
+
+    class ClientModel {
+        +int clientId
+        +int userId
+        +string name
+        +string phone
+        +string email
+        +string address
+        +datetime joinedDate
+    }
+
+    class CaseModel {
+        +int caseId
+        +int clientId
+        +int userId
+        +string type
+        +string status
+        +string description
+        +datetime openedDate
+        +datetime closedDate
+    }
+
+    class SettingsModel {
+        +int userId
+        +string username
+        +string email
+        +string theme
+        +string language
+        +bool notificationsEnabled
+    }
+
+    Server --> Logger : uses
+    Server --> Auth : uses
+    Server --> Identify : uses
+    Server --> AuthController : routes to
+    Server --> UsersController : routes to
+    Server --> ClientsController : routes to
+    Server --> CasesController : routes to
+    Server --> SettingsController : routes to
+
+    Auth --> UsersController : guards
+    Auth --> ClientsController : guards
+    Auth --> CasesController : guards
+
+    UsersController --> UserModel : reads/writes
+    ClientsController --> ClientModel : reads/writes
+    CasesController --> CaseModel : reads/writes
+    SettingsController --> SettingsModel : reads/writes
+    AuthController --> UserModel : reads
+```
+
 ## Authentication
 
 This API uses role-based access control via the `x-user-role` request header.
 
-| Role    | Permissions            |
-|---------|------------------------|
-| admin   | GET, POST, PUT, DELETE |
-| manager | GET, POST, PUT         |
-| user    | GET only               |
+| Role    | Permissions                        |
+|---------|------------------------------------|
+| admin   | GET, POST, PUT, DELETE             |
+| manager | GET, POST, PUT                     |
+| user    | GET + update their own record only |
 
 Example header:
 ```
@@ -75,7 +192,7 @@ x-user-id: 1
 
 ### Auth
 
-#### POST /auth/login
+#### POST /api/auth/login
 Login with email and password.
 
 **Request Body:**
@@ -104,25 +221,25 @@ Login with email and password.
 }
 ```
 
-#### POST /auth/logout
+#### POST /api/auth/logout
 Logout current user.
 
-#### GET /auth/me
+#### GET /api/auth/me
 Get current logged-in user. Requires `x-user-id` header.
 
 ---
 
 ### Users
 
-| Method | Path        | Description    | Auth Required |
-|--------|-------------|----------------|---------------|
-| GET    | /users      | Get all users  | No            |
-| GET    | /users/:id  | Get user by ID | No            |
-| POST   | /users      | Create a user  | manager+      |
-| PUT    | /users/:id  | Update a user  | manager+      |
-| DELETE | /users/:id  | Delete a user  | admin         |
+| Method | Path             | Description    | Auth Required |
+|--------|------------------|----------------|---------------|
+| GET    | /api/users       | Get all users  | No            |
+| GET    | /api/users/:id   | Get user by ID | No            |
+| POST   | /api/users       | Create a user  | manager+      |
+| PUT    | /api/users/:id   | Update a user  | manager+ or self |
+| DELETE | /api/users/:id   | Delete a user  | admin         |
 
-#### POST /users - Request Body
+#### POST /api/users - Request Body
 ```json
 {
   "firstName": "Tal",
@@ -157,15 +274,15 @@ Get current logged-in user. Requires `x-user-id` header.
 
 ### Clients
 
-| Method | Path          | Description      | Auth Required |
-|--------|---------------|------------------|---------------|
-| GET    | /clients      | Get all clients  | No            |
-| GET    | /clients/:id  | Get client by ID | No            |
-| POST   | /clients      | Create a client  | manager+      |
-| PUT    | /clients/:id  | Update a client  | manager+      |
-| DELETE | /clients/:id  | Delete a client  | admin         |
+| Method | Path               | Description      | Auth Required |
+|--------|--------------------|------------------|---------------|
+| GET    | /api/clients       | Get all clients  | No            |
+| GET    | /api/clients/:id   | Get client by ID | No            |
+| POST   | /api/clients       | Create a client  | manager+      |
+| PUT    | /api/clients/:id   | Update a client  | manager+      |
+| DELETE | /api/clients/:id   | Delete a client  | admin         |
 
-#### POST /clients - Request Body
+#### POST /api/clients - Request Body
 ```json
 {
   "userId": 1,
@@ -189,20 +306,20 @@ Get current logged-in user. Requires `x-user-id` header.
 
 ### Cases
 
-| Method | Path        | Description   | Auth Required |
-|--------|-------------|---------------|---------------|
-| GET    | /cases      | Get all cases | No            |
-| GET    | /cases/:id  | Get case by ID| No            |
-| POST   | /cases      | Create a case | manager+      |
-| PUT    | /cases/:id  | Update a case | manager+      |
-| DELETE | /cases/:id  | Delete a case | admin         |
+| Method | Path             | Description    | Auth Required |
+|--------|------------------|----------------|---------------|
+| GET    | /api/cases       | Get all cases  | No            |
+| GET    | /api/cases/:id   | Get case by ID | No            |
+| POST   | /api/cases       | Create a case  | manager+      |
+| PUT    | /api/cases/:id   | Update a case  | manager+      |
+| DELETE | /api/cases/:id   | Delete a case  | admin         |
 
-#### GET /cases - Query Params
+#### GET /api/cases - Query Params
 | Param  | Type   | Required | Description                           |
 |--------|--------|----------|---------------------------------------|
 | status | string | No       | Filter by status: open/pending/closed |
 
-#### POST /cases - Request Body
+#### POST /api/cases - Request Body
 ```json
 {
   "clientId": 1,
@@ -225,12 +342,12 @@ Get current logged-in user. Requires `x-user-id` header.
 
 ### Settings
 
-| Method | Path      | Description              | Auth Required      |
-|--------|-----------|--------------------------|--------------------|
-| GET    | /settings | Get settings for user    | x-user-id header   |
-| PUT    | /settings | Update settings for user | x-user-id header   |
+| Method | Path          | Description              | Auth Required    |
+|--------|---------------|--------------------------|------------------|
+| GET    | /api/settings | Get settings for user    | x-user-id header |
+| PUT    | /api/settings | Update settings for user | x-user-id header |
 
-#### PUT /settings - Request Body
+#### PUT /api/settings - Request Body
 ```json
 {
   "username": "David Cohen",
@@ -274,6 +391,7 @@ Get current logged-in user. Requires `x-user-id` header.
 | 200  | Successful GET / PUT / DELETE    |
 | 201  | Successful POST (created)        |
 | 400  | Validation error / missing field |
+| 401  | Unauthenticated (no role header) |
 | 403  | Forbidden (insufficient role)    |
 | 404  | Resource not found               |
 | 500  | Internal server error            |
@@ -291,4 +409,11 @@ Get current logged-in user. Requires `x-user-id` header.
 
 The server port is configured in `.env`:
 
-PORT=5000: Change this value if you need a different port. Update `REACT_APP_API_URL` in the frontend `.env` accordingly.
+```
+PORT=3000
+```
+
+Change this value if you need a different port. Update `REACT_APP_API_URL` in the frontend `.env` accordingly.
+
+---
+

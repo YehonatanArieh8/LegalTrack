@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Import middleware
 const logger = require('./middleware/logger');
@@ -23,11 +23,11 @@ app.use(cors());
 app.use(logger);
 
 // Register routes
-app.use('/users', usersRoutes);
-app.use('/clients', clientsRoutes);
-app.use('/cases', casesRoutes);
-app.use('/auth', authRoutes);
-app.use('/settings', settingsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/clients', clientsRoutes);
+app.use('/api/cases', casesRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Handle requests to unknown routes
 app.use((req, res) => {

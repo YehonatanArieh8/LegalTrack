@@ -1,7 +1,7 @@
 // Route definitions for the /cases endpoint
 const express = require('express');
 const router = express.Router();
-const authorize = require('../middleware/auth');
+const { authorize } = require('../middleware/auth');
 const {
   getAllCases,
   getCaseById,
