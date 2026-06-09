@@ -11,54 +11,39 @@ A web application for lawyers and law firms to manage cases, clients, and deadli
 ├── Legaltrack-Frontend/   # React.js frontend application
 
 ```
-## Class Diagram
+
+## System Architecture
 
 ```mermaid
-classDiagram
-    class User {
-        +int userId
-        +string firstName
-        +string lastName
-        +string userRole
-        +datetime createDate
-        +datetime updateDate
-    }
+flowchart TD
+    Browser["🌐 Browser\nlocalhost:5173"]
 
-    class Client {
-        +int clientId
-        +int userId
-        +string name
-        +string phone
-        +string email
-        +string address
-        +datetime joinedDate
-    }
+    subgraph Frontend["Legaltrack-Frontend (React)"]
+        App["App.js\n(Router)"]
+        Pages["Pages\nLogin / Dashboard / Clients / Cases / Settings"]
+        Components["Components\nNavbar / Footer / Card / DataTable"]
+        ApiService["ApiService\nservices/api.js"]
+        LangCtx["LanguageContext\n(EN / HE + RTL)"]
+    end
 
-    class Case {
-        +int caseId
-        +int clientId
-        +int userId
-        +string type
-        +string status
-        +string description
-        +datetime openedDate
-        +datetime closedDate
-    }
+    subgraph Backend["Legaltrack-Backend (Node.js + Express)"]
+        Server["server.js\n:3000/api"]
+        Middleware["Middleware\nLogger / Auth / Identify"]
+        Controllers["Controllers\nAuth / Users / Clients / Cases / Settings"]
+        Models["Mock Data (in-memory)\nusers / clients / cases / settings"]
+    end
 
-    class Settings {
-        +int userId
-        +string username
-        +string email
-        +string theme
-        +string language
-        +bool notificationsEnabled
-    }
-
-    User "1" --> "0..*" Client : manages
-    User "1" --> "0..*" Case : handles
-    User "1" --> "1" Settings : has
-    Client "1" --> "0..*" Case : linked to
+    Browser --> App
+    App --> Pages
+    Pages --> Components
+    Pages --> ApiService
+    Pages --> LangCtx
+    ApiService -- "HTTP Requests\n/api/*" --> Server
+    Server --> Middleware
+    Middleware --> Controllers
+    Controllers --> Models
 ```
+
 ---
 
 ## Quick Start
@@ -138,5 +123,4 @@ For full API documentation see `Legaltrack-Backend/README.md`.
 For full frontend documentation see `Legaltrack-Frontend/README.md`.
 
 ---
-
 
