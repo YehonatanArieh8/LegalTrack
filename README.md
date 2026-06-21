@@ -373,16 +373,6 @@ erDiagram
 | Folder → Documents | One-to-Many | A folder contains multiple documents |
 | Case → Notes | One-to-Many | A case has multiple notes |
 | User → Notes | One-to-Many | A user writes multiple notes |
-| Relationship | Type | Description |
-|-------------|------|-------------|
-| User → Clients | One-to-Many | A lawyer manages multiple clients |
-| Client → Cases | One-to-Many | A client has multiple cases |
-| User ↔ Cases | Many-to-Many | Multiple lawyers can work on a case (via user_cases) |
-| Case → Documents | One-to-Many | A case has multiple documents |
-| Case → Folders | One-to-Many | A case has multiple folders |
-| Folder → Documents | One-to-Many | A folder contains multiple documents |
-| Case → Notes | One-to-Many | A case has multiple notes |
-| User → Notes | One-to-Many | A user writes multiple notes |
 
 ---
 
