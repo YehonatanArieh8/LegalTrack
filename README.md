@@ -280,74 +280,99 @@ x-user-role: <userRole>
 
 ## 🗄️ Database ERD
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                              LegalTrack — ERD                                       │
-└─────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+erDiagram
+    USERS ||--o{ CLIENTS : manages
+    USERS ||--o{ NOTES : writes
+    USERS }o--o{ CASES : "assigned to (user_cases)"
+    CLIENTS ||--o{ CASES : has
+    CASES ||--o{ DOCUMENTS : contains
+    CASES ||--o{ FOLDERS : contains
+    CASES ||--o{ NOTES : has
+    FOLDERS ||--o{ DOCUMENTS : organizes
 
-┌──────────────────┐          ┌──────────────────────┐
-│      users       │          │      user_cases       │
-├──────────────────┤          ├──────────────────────┤
-│ PK userId        │◄────────►│ FK userId            │
-│    firstName     │  M : M   │ FK caseId            │
-│    lastName      │          │    assignedAt        │
-│    email         │          └──────────────────────┘
-│    password      │                    ▲
-│    userRole      │                    │
-│    username      │                    │
-│    theme         │          ┌─────────┴────────┐
-│    language      │          │      cases       │
-│    notifications │          ├──────────────────┤
-│    createDate    │          │ PK caseId        │
-│    updateDate    │          │ FK clientId      │◄──────────────┐
-└────────┬─────────┘          │    type          │               │
-         │                    │    status        │               │
-         │ 1 : M              │    description   │               │
-         │                    │    openedDate    │               │
-         ▼                    │    closedDate    │               │
-┌──────────────────┐          │    createdAt     │               │
-│     clients      │          └────────┬─────────┘               │
-├──────────────────┤                   │                          │
-│ PK clientId      │                   │ 1 : M                    │
-│ FK userId        │                   │                          │
-│    name          │          ┌────────┴──────────┐               │
-│    phone         │          │                   │               │
-│    email         │◄─────────┘      ┌────────────┴───┐          │
-│    address       │  1 : M          │   documents    │          │
-│    createdAt     │                 ├────────────────┤          │
-└──────────────────┘                 │ PK documentId  │          │
-                                     │ FK caseId      │          │
-                                     │ FK folderId    │◄────┐    │
-                                     │    filename    │     │    │
-                                     │    filePath    │     │    │
-                                     │    mimetype    │     │    │
-                                     │    size        │     │    │
-                                     │    aiSummary   │     │    │
-                                     │    uploadDate  │     │    │
-                                     └────────────────┘     │    │
-                                                            │    │
-                                     ┌──────────────────┐   │    │
-                                     │     folders      │   │    │
-                                     ├──────────────────┤   │    │
-                                     │ PK folderId      │───┘    │
-                                     │ FK caseId        │────────┘
-                                     │    name          │  1 : M
-                                     │    createdAt     │
-                                     └──────────────────┘
+    USERS {
+        int userId PK
+        string firstName
+        string lastName
+        string email
+        string password
+        enum userRole
+        string username
+        enum theme
+        enum language
+        boolean notificationsEnabled
+        datetime createDate
+        datetime updateDate
+    }
 
-                                     ┌──────────────────┐
-                                     │      notes       │
-                                     ├──────────────────┤
-                                     │ PK noteId        │
-                                     │ FK caseId        │────────► cases
-                                     │ FK userId        │────────► users
-                                     │    content       │
-                                     │    createdAt     │
-                                     └──────────────────┘
+    CLIENTS {
+        int clientId PK
+        int userId FK
+        string name
+        string phone
+        string email
+        text address
+        datetime createdAt
+    }
+
+    CASES {
+        int caseId PK
+        int clientId FK
+        enum type
+        enum status
+        text description
+        date openedDate
+        date closedDate
+        datetime createdAt
+    }
+
+    DOCUMENTS {
+        int documentId PK
+        int caseId FK
+        int folderId FK
+        string filename
+        string filePath
+        string mimetype
+        int size
+        text aiSummary
+        datetime uploadDate
+    }
+
+    FOLDERS {
+        int folderId PK
+        int caseId FK
+        string name
+        datetime createdAt
+    }
+
+    NOTES {
+        int noteId PK
+        int caseId FK
+        int userId FK
+        text content
+        datetime createdAt
+    }
+
+    USER_CASES {
+        int userId FK
+        int caseId FK
+        datetime assignedAt
+    }
 ```
 
 ### Relationships Summary
 
+| Relationship | Type | Description |
+|-------------|------|-------------|
+| User → Clients | One-to-Many | A lawyer manages multiple clients |
+| Client → Cases | One-to-Many | A client has multiple cases |
+| User ↔ Cases | Many-to-Many | Multiple lawyers can work on a case (via user_cases) |
+| Case → Documents | One-to-Many | A case has multiple documents |
+| Case → Folders | One-to-Many | A case has multiple folders |
+| Folder → Documents | One-to-Many | A folder contains multiple documents |
+| Case → Notes | One-to-Many | A case has multiple notes |
+| User → Notes | One-to-Many | A user writes multiple notes |
 | Relationship | Type | Description |
 |-------------|------|-------------|
 | User → Clients | One-to-Many | A lawyer manages multiple clients |
