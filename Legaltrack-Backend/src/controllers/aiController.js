@@ -2,6 +2,7 @@ const fs = require('fs');
 const PDFParser = require('pdf2json');
 const Groq = require('groq-sdk');
 const { Document } = require('../../models');
+const mammoth = require('mammoth');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -25,6 +26,47 @@ const extractPdfText = (filePath) => {
   });
 };
 
+const mammoth = require('mammoth');
+
+const extractTextFromFile = async (filePath, mimetype) => {
+  // PDF
+  if (mimetype === 'application/pdf') {
+    return new Promise((resolve, reject) => {
+      const pdfParser = new PDFParser();
+      pdfParser.on('pdfParser_dataReady', (pdfData) => {
+        const text = pdfData.Pages.map(page =>
+          page.Texts.map(t => {
+            try { return decodeURIComponent(t.R.map(r => r.T).join('')); }
+            catch (e) { return t.R.map(r => r.T).join(''); }
+          }).join(' ')
+        ).join('\n');
+        resolve(text);
+      });
+      pdfParser.on('pdfParser_dataError', reject);
+      pdfParser.loadPDF(filePath);
+    });
+  }
+
+  // Word (.docx / .doc)
+  if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mimetype === 'application/msword') {
+    const result = await mammoth.extractRawText({ path: filePath });
+    return result.value;
+  }
+
+  // Plain text
+  if (mimetype === 'text/plain') {
+    return fs.readFileSync(filePath, 'utf8');
+  }
+
+  // Image — לא ניתן לחלץ טקסט
+  if (mimetype.startsWith('image/')) {
+    return 'This is an image file. Please describe what you see in the image.';
+  }
+
+  return 'Unsupported file type for text extraction.';
+};
+
 const summarizeDocument = async (req, res) => {
   const document = await Document.findByPk(req.params.docId);
   if (!document) {
@@ -41,14 +83,14 @@ const summarizeDocument = async (req, res) => {
     });
   }
 
-  const text = await extractPdfText(document.filePath);
+  const text = await extractTextFromFile(document.filePath, document.mimetype);
   const truncated = text.slice(0, 8000);
 
   const completion = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: [
-      { role: 'system', content: 'You are a legal assistant. Summarize the following legal document concisely. Extract key points, dates, and any important clauses.' },
-      { role: 'user', content: `Please summarize this legal document:\n\n${truncated}` }
+      { role: 'system', content: 'You are a legal assistant. Summarize the following document concisely. Extract key points, dates, and any important clauses or information.' },
+      { role: 'user', content: `Please summarize this document:\n\n${truncated}` }
     ],
     max_tokens: 1000,
   });
