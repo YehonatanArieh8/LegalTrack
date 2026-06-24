@@ -124,7 +124,7 @@ const LoginPage = () => {
               type="text"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder=""
+              placeholder="david@legaltrack.com"
               className="login-input"
             />
           </div>
