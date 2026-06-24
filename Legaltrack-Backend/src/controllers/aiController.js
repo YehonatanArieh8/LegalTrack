@@ -26,8 +26,6 @@ const extractPdfText = (filePath) => {
   });
 };
 
-const mammoth = require('mammoth');
-
 const extractTextFromFile = async (filePath, mimetype) => {
   // PDF
   if (mimetype === 'application/pdf') {
